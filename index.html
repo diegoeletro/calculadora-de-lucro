@@ -5,19 +5,15 @@
   <title>Calculadora de Lucro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#3a0ca3">
 
   <style>
-    /* 🔥 CORREÇÃO PRINCIPAL */
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: linear-gradient(160deg, #1e1e2f, #3a0ca3);
       display: flex;
       justify-content: center;
@@ -26,25 +22,19 @@
     }
 
     .app {
-      background: #ffffff;
+      background: white;
       padding: 25px;
       border-radius: 25px;
       width: 320px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
       text-align: center;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      color: #333;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
     }
 
     label {
       display: block;
-      text-align: center;
-      font-weight: bold;
       margin-top: 10px;
-      color: #555;
+      font-weight: bold;
+      text-align: center;
     }
 
     input {
@@ -53,67 +43,46 @@
       margin-top: 5px;
       border-radius: 10px;
       border: 1px solid #ddd;
+      text-align: center;
       font-size: 16px;
-      text-align: center;
-    }
-
-    input::placeholder {
-      text-align: center;
     }
 
     .resultado {
       margin-top: 20px;
-      padding: 25px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #f8f9ff, #eef1ff);
+      padding: 20px;
+      border-radius: 15px;
+      background: #f5f6ff;
     }
 
-    .valor {
-      font-size: 36px;
-      font-weight: bold;
-    }
-
-    .percentual {
-      font-size: 22px;
-      font-weight: bold;
-    }
+    .valor { font-size: 32px; font-weight: bold; }
+    .percentual { font-size: 20px; font-weight: bold; }
 
     .descricao {
       font-size: 14px;
+      margin-top: 5px;
       color: #666;
-      margin-top: 8px;
     }
 
     .verde { color: #2ecc71; }
     .vermelho { color: #e74c3c; }
 
-    .btn {
-      margin-top: 15px;
+    .btn, .btn-pix {
+      margin-top: 10px;
       padding: 12px;
       width: 100%;
+      border-radius: 10px;
       border: none;
-      border-radius: 12px;
-      background: #3a0ca3;
       color: white;
-      font-size: 16px;
     }
 
-    .btn-pix {
-      margin-top: 10px;
-      padding: 10px;
-      width: 100%;
-      border: none;
-      border-radius: 12px;
-      background: #2ecc71;
-      color: white;
-      font-size: 14px;
-    }
+    .btn { background: #3a0ca3; }
+    .btn-pix { background: #2ecc71; }
 
     .footer {
       margin-top: 15px;
       font-size: 12px;
-      color: #666;
       line-height: 1.5;
+      color: #666;
     }
   </style>
 </head>
@@ -123,21 +92,19 @@
   <h2>💰 Calculadora de Lucro</h2>
 
   <label>Preço de custo</label>
-  <input type="number" id="custo" placeholder="Ex: 10.00">
+  <input type="text" id="custo" inputmode="decimal" placeholder="R$ 0">
 
   <label>Valor do repasse</label>
-  <input type="number" id="venda" placeholder="Ex: 20.00">
+  <input type="text" id="venda" inputmode="decimal" placeholder="R$ 0">
 
   <div class="resultado">
     <div id="valor" class="valor verde">R$ 0,00</div>
     <div id="percentual" class="percentual verde">0%</div>
-    <div id="descricao" class="descricao">
-      Resultado por venda
-    </div>
+    <div id="descricao" class="descricao">Resultado por venda</div>
   </div>
 
-  <button class="btn" onclick="instalar()">📱 Instalar App</button>
-  <button class="btn-pix" onclick="copiarPix()">💸 Copiar chave PIX</button>
+  <button class="btn">📱 Instalar App</button>
+  <button class="btn-pix" onclick="copiarPix()">💸 Copiar PIX</button>
 
   <div class="footer">
     Desenvolvido por DIEGO ELETRO LTDA 2026<br>
@@ -147,63 +114,72 @@
 </div>
 
 <script>
-  const custoInput = document.getElementById("custo");
-  const vendaInput = document.getElementById("venda");
+const custoInput = document.getElementById("custo");
+const vendaInput = document.getElementById("venda");
+const valorEl = document.getElementById("valor");
+const percentualEl = document.getElementById("percentual");
+const descricaoEl = document.getElementById("descricao");
 
-  const valorEl = document.getElementById("valor");
-  const percentualEl = document.getElementById("percentual");
-  const descricaoEl = document.getElementById("descricao");
+function formatar(valor) {
+  valor = valor.replace(/[^\d,]/g, "");
 
-  let deferredPrompt;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  function instalar() {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-    } else {
-      alert("No iPhone: toque em compartilhar → adicionar à tela de início");
-    }
+  if (valor.includes(",")) {
+    let partes = valor.split(",");
+    partes[1] = partes[1].slice(0, 2);
+    valor = partes[0] + "," + partes[1];
   }
 
-  function copiarPix() {
-    navigator.clipboard.writeText("17816268000107");
-    alert("Chave PIX copiada!");
+  return "R$ " + valor;
+}
+
+function limpar(valor) {
+  return parseFloat(
+    valor.replace("R$", "")
+         .replace(",", ".")
+  ) || 0;
+}
+
+function aoDigitar(e) {
+  let valor = e.target.value.replace("R$ ", "");
+  e.target.value = formatar(valor);
+  calcular();
+}
+
+custoInput.addEventListener("input", aoDigitar);
+vendaInput.addEventListener("input", aoDigitar);
+
+function calcular() {
+  const custo = limpar(custoInput.value);
+  const venda = limpar(vendaInput.value);
+
+  if (custo <= 0 || venda <= 0) {
+    valorEl.innerText = "R$ 0,00";
+    percentualEl.innerText = "0%";
+    descricaoEl.innerText = "Resultado por venda";
+    return;
   }
 
-  function calcular() {
-    const custo = parseFloat(custoInput.value);
-    const venda = parseFloat(vendaInput.value);
+  const lucro = venda - custo;
+  const percentual = (lucro / custo) * 100;
 
-    if (isNaN(custo) || isNaN(venda) || custo <= 0) {
-      valorEl.innerText = "R$ 0,00";
-      percentualEl.innerText = "0%";
-      descricaoEl.innerText = "Resultado por venda";
-      return;
-    }
+  valorEl.innerText = "R$ " + lucro.toFixed(2).replace(".", ",");
+  percentualEl.innerText = Math.round(percentual) + "%";
 
-    const lucro = venda - custo;
-    const percentual = (lucro / custo) * 100;
-
-    valorEl.innerText = "R$ " + lucro.toFixed(2).replace(".", ",");
-    percentualEl.innerText = percentual.toFixed(2) + "%";
-
-    if (lucro >= 0) {
-      valorEl.className = "valor verde";
-      percentualEl.className = "percentual verde";
-      descricaoEl.innerText = "Lucro por venda";
-    } else {
-      valorEl.className = "valor vermelho";
-      percentualEl.className = "percentual vermelho";
-      descricaoEl.innerText = "Prejuízo por venda";
-    }
+  if (lucro >= 0) {
+    valorEl.className = "valor verde";
+    percentualEl.className = "percentual verde";
+    descricaoEl.innerText = "Lucro por venda";
+  } else {
+    valorEl.className = "valor vermelho";
+    percentualEl.className = "percentual vermelho";
+    descricaoEl.innerText = "Prejuízo por venda";
   }
+}
 
-  custoInput.addEventListener("input", calcular);
-  vendaInput.addEventListener("input", calcular);
+function copiarPix() {
+  navigator.clipboard.writeText("17816268000107");
+  alert("PIX copiado!");
+}
 </script>
 
 </body>
